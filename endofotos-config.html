@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EndoFotos — Configuración</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0d1117; --surface:#161b22; --border:#21262d; --accent:#e8c84a; --text:#e6edf3; --muted:#7d8590; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Sora',sans-serif; min-height:100vh; padding:40px 24px; }
+
+  .container { max-width:560px; margin:0 auto; }
+
+  .header { display:flex; align-items:center; gap:12px; margin-bottom:36px; }
+  .logo-mark { width:36px; height:36px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:12px; font-weight:500; color:#0d1117; }
+  .logo-text { font-size:18px; font-weight:700; letter-spacing:-0.3px; }
+  .logo-text span { color:var(--accent); }
+  .logo-sub { font-size:11px; color:var(--muted); }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:16px; }
+  .card-title { font-size:13px; font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .card-title span { color:var(--accent); }
+
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:6px; }
+  .field input, .field select {
+    width:100%; background:#0d1117; border:1px solid var(--border); border-radius:7px;
+    padding:10px 13px; color:var(--text); font-size:13px; font-family:'Sora',sans-serif;
+    transition:border-color 0.2s;
+  }
+  .field input:focus, .field select:focus { outline:none; border-color:var(--accent); }
+  .field .hint { font-size:11px; color:var(--muted); margin-top:5px; line-height:1.5; }
+
+  .range-row { display:flex; align-items:center; gap:12px; }
+  .range-row input[type=range] { flex:1; accent-color:var(--accent); }
+  .range-val { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); min-width:40px; text-align:right; }
+
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; }
+  .toggle-label { font-size:13px; }
+  .toggle { width:40px; height:22px; background:var(--border); border-radius:11px; position:relative; cursor:pointer; transition:background 0.2s; border:none; }
+  .toggle.on { background:var(--accent); }
+  .toggle::after { content:''; position:absolute; width:16px; height:16px; background:white; border-radius:50%; top:3px; left:3px; transition:transform 0.2s; }
+  .toggle.on::after { transform:translateX(18px); }
+
+  .status-card { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:10px; padding:14px 16px; margin-bottom:16px; }
+  .status-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .status-row:last-child { margin-bottom:0; }
+  .status-label { font-size:12px; color:var(--muted); }
+  .status-val { font-family:'DM Mono',monospace; font-size:12px; color:#22c55e; }
+
+  .btn-save { width:100%; padding:12px; background:var(--accent); color:#0d1117; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Sora',sans-serif; transition:background 0.2s; margin-top:4px; }
+  .btn-save:hover { background:#f0d45a; }
+
+  .btn-preview { width:100%; padding:10px; background:transparent; color:var(--muted); border:1px solid var(--border); border-radius:8px; font-size:13px; cursor:pointer; font-family:'Sora',sans-serif; transition:all 0.2s; margin-top:8px; }
+  .btn-preview:hover { border-color:var(--accent); color:var(--accent); }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--surface); border:1px solid var(--accent); border-radius:10px; padding:12px 20px; font-size:13px; font-weight:600; color:var(--accent); opacity:0; transition:opacity 0.3s; pointer-events:none; font-family:'DM Mono',monospace; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo-mark">EF</div>
+    <div>
+      <div class="logo-text">Endo<span>Fotos</span></div>
+      <div class="logo-sub">Panel de configuración — EndoFocus 2026</div>
+    </div>
+  </div>
+
+  <!-- Estado -->
+  <div class="status-card" id="status-card">
+    <div class="status-row"><span class="status-label">Fotos Día 1</span><span class="status-val" id="count-d1">cargando...</span></div>
+    <div class="status-row"><span class="status-label">Fotos Día 2</span><span class="status-val" id="count-d2">cargando...</span></div>
+    <div class="status-row"><span class="status-label">Última actualización</span><span class="status-val" id="last-update">—</span></div>
+  </div>
+
+  <!-- Velocidad -->
+  <div class="card">
+    <div class="card-title"><span>⏱</span> Velocidad del slideshow</div>
+    <div class="field">
+      <label>Segundos por foto</label>
+      <div class="range-row">
+        <input type="range" id="speed-range" min="3" max="20" value="7" step="1" oninput="document.getElementById('speed-val').textContent=this.value+'s'">
+        <div class="range-val" id="speed-val">7s</div>
+      </div>
+      <div class="hint">Recomendado para breaks largos: 10-12s · Para breaks cortos: 5-7s</div>
+    </div>
+  </div>
+
+  <!-- Actualización automática -->
+  <div class="card">
+    <div class="card-title"><span>↻</span> Actualización automática</div>
+    <div class="field">
+      <label>Frecuencia de consulta a Drive</label>
+      <select id="refresh-select">
+        <option value="30">Cada 30 segundos</option>
+        <option value="60" selected>Cada 1 minuto</option>
+        <option value="120">Cada 2 minutos</option>
+      </select>
+      <div class="hint">El visualizador consulta Drive automáticamente para mostrar fotos nuevas.</div>
+    </div>
+  </div>
+
+  <!-- Orden -->
+  <div class="card">
+    <div class="card-title"><span>⇄</span> Orden de las fotos</div>
+    <div class="field">
+      <div class="toggle-row">
+        <span class="toggle-label">Orden aleatorio</span>
+        <button class="toggle on" id="shuffle-toggle" onclick="toggleShuffle()"></button>
+      </div>
+      <div class="hint" style="margin-top:8px;">Desactivado: las fotos se muestran del más reciente al más antiguo.</div>
+    </div>
+  </div>
+
+  <button class="btn-save" onclick="saveConfig()">Guardar configuración</button>
+  <button class="btn-preview" onclick="window.open('endofotos-viewer.html','_blank')">▶ Abrir visualizador</button>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_KEY   = 'AIzaSyDKeLIjLEIcE2eFDpJd887KbgR4tq-1FpY';
+  const FOLDER_D1 = '17XX4HT1HyYtEvTww4C-nbv9IjGh9LrTn';
+  const FOLDER_D2 = '1PKJZmEaHA9Ih6ClPeOxNibxTBaCUGsiw';
+
+  let shuffleOn = true;
+
+  function toggleShuffle() {
+    shuffleOn = !shuffleOn;
+    document.getElementById('shuffle-toggle').classList.toggle('on', shuffleOn);
+  }
+
+  async function fetchCount(folderId) {
+    const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'+and+trashed=false&fields=files(id)&key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return (data.files || []).length;
+  }
+
+  async function loadCounts() {
+    try {
+      const [c1, c2] = await Promise.all([fetchCount(FOLDER_D1), fetchCount(FOLDER_D2)]);
+      document.getElementById('count-d1').textContent = c1 + ' fotos';
+      document.getElementById('count-d2').textContent = c2 + ' fotos';
+      const now = new Date();
+      document.getElementById('last-update').textContent = now.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    } catch(e) {
+      document.getElementById('count-d1').textContent = 'error';
+      document.getElementById('count-d2').textContent = 'error';
+    }
+  }
+
+  function saveConfig() {
+    const speed  = document.getElementById('speed-range').value;
+    const refresh = document.getElementById('refresh-select').value;
+    localStorage.setItem('ef_speed', speed);
+    localStorage.setItem('ef_refresh', refresh);
+    localStorage.setItem('ef_shuffle', shuffleOn ? '1' : '0');
+    showToast('Configuración guardada ✓');
+    loadCounts();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Restore saved
+  const saved_speed = localStorage.getItem('ef_speed');
+  if (saved_speed) {
+    document.getElementById('speed-range').value = saved_speed;
+    document.getElementById('speed-val').textContent = saved_speed + 's';
+  }
+  const saved_refresh = localStorage.getItem('ef_refresh');
+  if (saved_refresh) document.getElementById('refresh-select').value = saved_refresh;
+  const saved_shuffle = localStorage.getItem('ef_shuffle');
+  if (saved_shuffle === '0') { shuffleOn = false; document.getElementById('shuffle-toggle').classList.remove('on'); }
+
+  loadCounts();
+  setInterval(loadCounts, 60000);
+</script>
+</body>
+</html>
